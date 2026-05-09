@@ -1,22 +1,31 @@
 require('dotenv').config();
 const express = require("express");
 const mongoose = require("mongoose");
-const cloudinary = require("cloudinary").v2;
-const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const cloudinary = require("cloudinary").v2; 
 const multer = require("multer");
-const app = express();
+const streamifier = require("streamifier"); 
 
+const app = express();
 app.use(express.static(__dirname));
 app.use(express.json());
 
+// 1. Cloudinary Config
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_NAME,
   api_key: process.env.CLOUDINARY_KEY,
   api_secret: process.env.CLOUDINARY_SECRET
 });
 
-mongoose.connect(process.env.MONGO_URI).then(() => console.log("Database Connected"));
+// 2. Database Connection
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("✅ Database Connected"))
+  .catch(err => console.log("❌ DB Error:", err));
 
+// 3. Multer Setup (Using Memory - NOT folders)
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
+// 4. Database Schema
 const CitySchema = new mongoose.Schema({
     id: String, name: String, lat: Number, lng: Number,
     attractions: [{
@@ -28,11 +37,7 @@ const CitySchema = new mongoose.Schema({
 });
 const City = mongoose.model("City", CitySchema);
 
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: { folder: 'scotland_map' },
-});
-const upload = multer({ storage });
+// --- API ROUTES ---
 
 app.get("/api/data", async (req, res) => {
     const cities = await City.find();
@@ -52,20 +57,51 @@ app.post("/api/city", async (req, res) => {
     res.json({ success: true });
 });
 
+// 5. OFFICIAL UPLOAD ROUTE
 app.post("/api/upload/:cityId", upload.single("image"), async (req, res) => {
     const city = await City.findOne({ id: req.params.cityId });
-    const attractionData = {
-        name: req.body.name,
-        description: req.body.description,
-        img: req.file.path,
-        isTicketed: req.body.isTicketed === 'true',
-        price: parseFloat(req.body.price) || 0,
-        hours: { open: req.body.openTime, close: req.body.closeTime, closedDays: req.body.closedDays },
-        tags: req.body.tags ? req.body.tags.split(',').map(t => t.trim()) : []
+    if (!city) return res.status(404).send("City not found");
+
+    // This function converts the image in your RAM to a format Cloudinary understands
+    let streamUpload = (req) => {
+        return new Promise((resolve, reject) => {
+            let stream = cloudinary.uploader.upload_stream(
+                { folder: "scotland_map" },
+                (error, result) => {
+                    if (result) {
+                        resolve(result);
+                    } else {
+                        reject(error);
+                    }
+                }
+            );
+            streamifier.createReadStream(req.file.buffer).pipe(stream);
+        });
     };
-    city.attractions.push(attractionData);
-    await city.save();
-    res.json({ success: true });
+
+    try {
+        const result = await streamUpload(req);
+        
+        city.attractions.push({
+            name: req.body.name,
+            description: req.body.description,
+            img: result.secure_url, 
+            isTicketed: req.body.isTicketed === 'true',
+            price: parseFloat(req.body.price) || 0,
+            hours: { 
+                open: req.body.openTime, 
+                close: req.body.closeTime,
+                closedDays: req.body.closedDays 
+            },
+            tags: req.body.tags ? req.body.tags.split(',') : []
+        });
+
+        await city.save();
+        res.json({ success: true });
+    } catch (error) {
+        console.error("Cloudinary Error:", error);
+        res.status(500).json({ error: "Upload failed" });
+    }
 });
 
 app.post("/api/delete-attraction", async (req, res) => {
