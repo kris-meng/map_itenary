@@ -20,29 +20,28 @@ cloudinary.config({
 
 mongoose.connect(process.env.MONGO_URI).then(() => console.log("✅ Database Connected"));
 
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
+const upload = multer({ storage: multer.memoryStorage() });
 
 // --- SCHEMA ---
 const CitySchema = new mongoose.Schema({
-    id: String,
+  id: String,
+  name: String,
+  lat: Number,
+  lng: Number,
+  tags: [String],
+  attractions: [{
     name: String,
-    lat: Number,
-    lng: Number,
-    tags: [String],
-    attractions: [{
-        name: String,
-        description: String,
-        img: String,
-        isTicketed: Boolean,
-        price: Number,
-        hours: { open: String, close: String },
-        tags: [String]
-    }]
+    description: String,
+    img: String,
+    isTicketed: Boolean,
+    price: Number,
+    hours: { open: String, close: String },
+    tags: [String]
+  }]
 });
 const City = mongoose.model("City", CitySchema);
 
-// --- HELPERS (Your Logic) ---
+// --- HELPERS ---
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
 async function geocode(place) {
@@ -70,9 +69,7 @@ function generateTags(attractions) {
   const found = new Set();
   attractions.forEach(a => {
     const text = (a.name + " " + (a.description || "")).toLowerCase();
-    keywords.forEach(k => {
-      if (text.includes(k.toLowerCase())) found.add(k);
-    });
+    keywords.forEach(k => { if (text.includes(k.toLowerCase())) found.add(k); });
   });
   return [...found].slice(0, 5);
 }
@@ -80,84 +77,93 @@ function generateTags(attractions) {
 // --- ROUTES ---
 
 app.get("/api/data", async (req, res) => {
+  try {
     const cities = await City.find();
     res.json({ cities });
+  } catch(err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// ADD CITY (With Automatic Geocoding)
 app.post("/api/city", async (req, res) => {
-    const name = req.body.name;
-    
-    // Check known coords first, then hit API
+  try {
+    const name = req.body?.name?.trim();
+    if (!name) return res.status(400).json({ error: "City name required" });
+
+    const existing = await City.findOne({ name: { $regex: new RegExp(`^${name}$`, "i") } });
+    if (existing) return res.status(409).json({ error: `"${name}" already exists` });
+
     let coords = await geocode(name);
-    
-    // Fallback if geocode fails
-    if (!coords) coords = { lat: 56.4907, lng: -4.2026 };
+    if (!coords) coords = { lat: 56.4907, lng: -4.2026 }; // fallback: centre of Scotland
 
     const newCity = new City({
-        id: name.toLowerCase().replace(/\s+/g, "_"),
-        name: name,
-        lat: coords.lat,
-        lng: coords.lng,
-        tags: ["Exploring"],
-        attractions: []
+      id: name.toLowerCase().replace(/\s+/g, "_"),
+      name,
+      lat: coords.lat,
+      lng: coords.lng,
+      tags: [],
+      attractions: []
     });
-    
+
     await newCity.save();
+    console.log(`✅ City added: ${name}`);
     res.json({ success: true });
+  } catch(err) {
+    console.error("Add city error:", err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// SAVE ATTRACTION (Fixed saving + Auto-Tags)
 app.post("/api/upload/:cityId", upload.single("image"), async (req, res) => {
-    try {
-        const city = await City.findOne({ id: req.params.cityId });
-        if (!city) return res.status(404).json({ error: "City not found" });
+  try {
+    const city = await City.findOne({ id: req.params.cityId });
+    if (!city) return res.status(404).json({ error: "City not found" });
+    if (!req.file) return res.status(400).json({ error: "No image file received" });
 
-        // ✅ Check file actually arrived
-        if (!req.file) return res.status(400).json({ error: "No image file received" });
+    console.log("File received:", req.file.originalname, req.file.size, "bytes");
 
-        console.log("File received:", req.file.originalname, req.file.size, "bytes");
-        console.log("Body:", req.body);
+    const streamUpload = (req) => new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        { folder: "scotland_map" },
+        (error, result) => error ? reject(error) : resolve(result)
+      );
+      streamifier.createReadStream(req.file.buffer).pipe(stream);
+    });
 
-        // Stream to Cloudinary
-        let streamUpload = (req) => {
-            return new Promise((resolve, reject) => {
-                let stream = cloudinary.uploader.upload_stream(
-                    { folder: "scotland_map" },
-                    (error, result) => { result ? resolve(result) : reject(error); }
-                );
-                streamifier.createReadStream(req.file.buffer).pipe(stream);
-            });
-        };
+    const cloudResult = await streamUpload(req);
 
-        const cloudResult = await streamUpload(req);
+    city.attractions.push({
+      name: req.body.name,
+      description: req.body.description,
+      img: cloudResult.secure_url,
+      isTicketed: req.body.isTicketed === "true",
+      price: parseFloat(req.body.price) || 0,
+      hours: { open: req.body.openTime, close: req.body.closeTime },
+      tags: req.body.tags ? req.body.tags.split(",").map(t => t.trim()) : []
+    });
 
-        // Add the new attraction
-        city.attractions.push({
-            name: req.body.name,
-            description: req.body.description,
-            img: cloudResult.secure_url,
-            isTicketed: req.body.isTicketed === 'true',
-            price: parseFloat(req.body.price) || 0,
-            hours: { open: req.body.openTime, close: req.body.closeTime },
-            tags: req.body.tags ? req.body.tags.split(',').map(t => t.trim()) : []
-        });
+    city.tags = generateTags(city.attractions);
+    await city.save();
 
-        // RE-GENERATE CITY TAGS AUTOMATICALLY
-        city.tags = generateTags(city.attractions);
-
-        await city.save(); // Save the whole city object with the new attraction
-        res.json({ success: true });
-    } catch (err) {
-        console.error(err);
-        res.status(500).send("Server Error");
-    }
+    console.log(`✅ Attraction "${req.body.name}" added to ${city.name}`);
+    res.json({ success: true });
+  } catch(err) {
+    console.error("Upload error:", err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.post("/api/delete-attraction", async (req, res) => {
-    await City.findOneAndUpdate({ id: req.body.cityId }, { $pull: { attractions: { _id: req.body.attractionId } } });
+  try {
+    await City.findOneAndUpdate(
+      { id: req.body.cityId },
+      { $pull: { attractions: { _id: req.body.attractionId } } }
+    );
     res.json({ success: true });
+  } catch(err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, "0.0.0.0", () => console.log(`Server running on port ${PORT}`));
