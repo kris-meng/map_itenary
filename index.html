@@ -302,6 +302,10 @@ async function switchTab(tab) {
   document.getElementById("map-view").style.display = tab === "map" ? "grid" : "none";
   document.getElementById("admin-view").classList.toggle("active", tab === "admin");
   if (tab === "admin") loadAdminSidebar();
+    // reopen previously selected admin city
+  if (adminActiveCityName) {
+    selectAdminCity(adminActiveCityName);
+  }
   if (tab === "map" && map) setTimeout(() => map.invalidateSize(), 100);
 }
 
