@@ -350,7 +350,7 @@ function showCityAttractions(city) {
     const lng = (a.lng && a.lng !== city.lng) ? a.lng : city.lng + (Math.random() - 0.5) * 0.02;
 
     const m = L.circleMarker([lat, lng], {
-      radius: 6, color: "#e8a44a", fillColor: "#e8a44a", fillOpacity: 0.9, weight: 2
+      radius: 6, color: "#7e0d71", fillColor: "#7e0d71", fillOpacity: 0.9, weight: 2
     }).addTo(map);
 
     m.bindPopup(`
@@ -406,7 +406,7 @@ async function updatePanel() {
     // draw polyline
     if (routeLine) map.removeLayer(routeLine);
     routeLine = L.polyline([[c1.lat, c1.lng], [c2.lat, c2.lng]], {
-      color: "#e8a44a", dashArray: "5, 10", weight: 2, opacity: 0.8
+      color: "#7e0d71", dashArray: "5, 10", weight: 2, opacity: 0.8
     }).addTo(map);
 
     try {

@@ -36,7 +36,9 @@ const CitySchema = new mongoose.Schema({
     isTicketed: Boolean,
     price: Number,
     hours: { open: String, close: String },
-    tags: [String]
+    tags: [String],
+    lat: Number,  // ← add these
+    lng: Number 
   }]
 });
 const City = mongoose.model("City", CitySchema);
@@ -131,7 +133,7 @@ app.post("/api/upload/:cityId", upload.single("image"), async (req, res) => {
     });
 
     const cloudResult = await streamUpload(req);
-
+    const attrCoords = await geocode(req.body.name);
     city.attractions.push({
       name: req.body.name,
       description: req.body.description,
@@ -139,7 +141,9 @@ app.post("/api/upload/:cityId", upload.single("image"), async (req, res) => {
       isTicketed: req.body.isTicketed === "true",
       price: parseFloat(req.body.price) || 0,
       hours: { open: req.body.openTime, close: req.body.closeTime },
-      tags: req.body.tags ? req.body.tags.split(",").map(t => t.trim()) : []
+      tags: req.body.tags ? req.body.tags.split(",").map(t => t.trim()) : [],
+      lat:         attrCoords?.lat ?? city.lat,  // ← falls back to city if not found
+      lng:         attrCoords?.lng ?? city.lng
     });
 
     city.tags = generateTags(city.attractions);
@@ -161,13 +165,15 @@ app.post("/api/edit-attraction", async (req, res) => {
 
     const attr = city.attractions.id(attractionId);
     if (!attr) return res.status(404).json({ error: "Attraction not found" });
-
+    const attrCoords = await geocode(name);
     attr.name        = name;
     attr.description = description;
     attr.isTicketed  = isTicketed;
     attr.price       = parseFloat(price) || 0;
     attr.hours       = { open: openTime, close: closeTime, closedDays };
     attr.tags        = tags ? tags.split(",").map(t => t.trim()).filter(Boolean) : [];
+    attr.lat = attrCoords?.lat ?? city.lat;
+    attr.lng = attrCoords?.lng ?? city.lng;
 
     city.tags = generateTags(city.attractions);
     await city.save();
