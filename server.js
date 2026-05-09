@@ -1,3 +1,4 @@
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 require('dotenv').config();
 const express = require("express");
 const mongoose = require("mongoose");
@@ -44,32 +45,38 @@ const City = mongoose.model("City", CitySchema);
 // --- HELPERS (Your Logic) ---
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
-const KNOWN_COORDS = {
-  "Edinburgh": { lat: 55.9533, lng: -3.1883 },
-  "Glasgow": { lat: 55.8642, lng: -4.2518 }
-};
-
 async function geocode(place) {
-  await sleep(1000); // Respect rate limits
-  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(place + ", Scotland")}`;
-  const res = await fetch(url, { headers: { "User-Agent": "ScotlandTravelMap/1.0" } });
-  if (!res.ok) return null;
-  const data = await res.json();
-  if (!data.length) return null;
-  return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+    // We must wait 1 second because Nominatim (OSM) blocks rapid requests
+    await sleep(1000);
+    
+    // We use 'featuretype=settlement' to ensure we get the actual city/town, not a street or shop
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cityName + ", Scotland")}&limit=1&featuretype=settlement`;
+    
+    try {
+        const res = await fetch(url, { 
+            headers: { 
+                // A specific User-Agent prevents being identified as a "bot" and getting fake data
+                "User-Agent": "ScotlandTravelPlanner_RealCoords_v1.0" 
+            } 
+        });
+        const data = await res.json();
+        
+        if (data && data.length > 0) {
+            console.log(`Found ${cityName} at: ${data[0].lat}, ${data[0].lon}`);
+            return {
+                lat: parseFloat(data[0].lat),
+                lng: parseFloat(data[0].lon)
+            };
+        } else {
+            console.warn(`Geocoder found nothing for: ${cityName}`);
+            return null;
+        }
+    } catch (e) {
+        console.error("Geocoding API Error:", e);
+        return null;
+    }
 }
 
-function generateTags(attractions) {
-  const keywords = ["Castle","Museum","Beach","Golf","Cathedral","Whisky","University","Waterfront","Hiking","Palace","Monument","Gallery","Park"];
-  const found = new Set();
-  attractions.forEach(a => {
-    const combinedText = (a.name + " " + (a.description || "")).toLowerCase();
-    keywords.forEach(k => {
-      if (combinedText.includes(k.toLowerCase())) found.add(k);
-    });
-  });
-  return [...found].slice(0, 5);
-}
 
 // --- ROUTES ---
 
@@ -83,7 +90,7 @@ app.post("/api/city", async (req, res) => {
     const name = req.body.name;
     
     // Check known coords first, then hit API
-    let coords = KNOWN_COORDS[name] || await geocode(name);
+    let coords = await geocode(name);
     
     // Fallback if geocode fails
     if (!coords) coords = { lat: 56.4907, lng: -4.2026 };
@@ -106,6 +113,12 @@ app.post("/api/upload/:cityId", upload.single("image"), async (req, res) => {
     try {
         const city = await City.findOne({ id: req.params.cityId });
         if (!city) return res.status(404).json({ error: "City not found" });
+
+        // ✅ Check file actually arrived
+        if (!req.file) return res.status(400).json({ error: "No image file received" });
+
+        console.log("File received:", req.file.originalname, req.file.size, "bytes");
+        console.log("Body:", req.body);
 
         // Stream to Cloudinary
         let streamUpload = (req) => {
