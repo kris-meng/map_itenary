@@ -50,7 +50,7 @@ async function geocode(place) {
     await sleep(1000);
     
     // We use 'featuretype=settlement' to ensure we get the actual city/town, not a street or shop
-    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cityName + ", Scotland")}&limit=1&featuretype=settlement`;
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(place + ", Scotland")}&limit=1&featuretype=settlement`;
     
     try {
         const res = await fetch(url, { 
