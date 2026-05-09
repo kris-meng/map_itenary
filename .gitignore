@@ -1,2 +1,7 @@
 node_modules/
+images/
+server_local.js
+index_og.html
+geocode-cache.json
 .DS_Store
+.env
