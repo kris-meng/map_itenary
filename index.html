@@ -13,61 +13,101 @@
   :root {
     --bg: #0e1117; --surface: #161b26; --surface2: #1e2535; --border: rgba(255,255,255,0.08);
     --accent: #0086e6; --accent2: #6e00a9; --text: #f0f4ff; --muted: #8892aa;
-    --danger: #e8555a; --success: #4caf82; --font-display: 'Playfair Display', serif; --font-body: 'DM Sans', sans-serif;
+    --danger: #e8555a; --success: #4caf82;
+    --font-display: 'Playfair Display', serif; --font-body: 'DM Sans', sans-serif;
   }
   html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font-body); overflow: hidden; }
   body { display: flex; flex-direction: column; }
 
   header { padding: 0.85rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
   .header-left h1 { font-family: var(--font-display); font-size: 1.4rem; }
-  
   .tab-bar { display: flex; gap: 4px; }
-  .tab-btn { font-size: 0.75rem; padding: 5px 14px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; }
+  .tab-btn { font-size: 0.75rem; padding: 5px 14px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; transition: all 0.15s; }
   .tab-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
-  .layout { display: grid; grid-template-columns: 330px 1fr; flex: 1; min-height: 0; overflow: hidden; }
+  /* wider sidebar: 400px */
+  .layout { display: grid; grid-template-columns: 400px 1fr; flex: 1; min-height: 0; overflow: hidden; }
   .panel { border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow-y: auto; padding: 1.5rem; }
-  
   #map { width: 100%; height: 100%; }
 
-  .mode-badge {
-    display: inline-block; font-size: 0.65rem; padding: 3px 10px; border-radius: 20px;
-    margin-bottom: 8px; background: rgba(79,142,247,0.12); color: var(--accent);
-    border: 1px solid rgba(79,142,247,0.2); letter-spacing: 0.05em; text-transform: uppercase;
-  }
+  .mode-badge { display: inline-block; font-size: 0.65rem; padding: 3px 10px; border-radius: 20px; margin-bottom: 8px; background: rgba(0,134,230,0.12); color: var(--accent); border: 1px solid rgba(0,134,230,0.2); letter-spacing: 0.05em; text-transform: uppercase; }
 
-  /* Admin View Styles */
+  /* Tag filter buttons */
+  .tag-bar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .tag-btn { font-size: 0.65rem; padding: 3px 10px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; transition: all 0.15s; }
+  .tag-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .tag-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+  /* Attraction cards */
+  .attraction-card { cursor: pointer; transition: transform 0.2s; border-radius: 10px; margin-bottom: 12px; border: 1px solid var(--border); overflow: hidden; background: var(--surface2); }
+  .attraction-card:hover { transform: translateY(-2px); border-color: rgba(0,134,230,0.3); }
+  .attraction-card img { width: 100%; height: 110px; object-fit: cover; display: block; }
+  .attr-body { padding: 12px; }
+  .attr-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+  .attr-name { font-size: 0.85rem; font-weight: 600; }
+  .attr-price { font-size: 0.62rem; color: var(--success); border: 1px solid var(--success); padding: 2px 6px; border-radius: 4px; white-space: nowrap; }
+  .attr-desc { font-size: 0.7rem; color: var(--muted); line-height: 1.4; margin-bottom: 6px; }
+  .attr-hours { font-size: 0.68rem; color: var(--muted); display: flex; align-items: center; gap: 5px; }
+  .attr-hours span { background: var(--surface); padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border); }
+  .attr-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .attr-tag { font-size: 0.6rem; padding: 2px 7px; border-radius: 20px; background: rgba(110,0,169,0.1); color: #a855f7; border: 1px solid rgba(110,0,169,0.2); }
+
+  /* Admin */
   #admin-view { display: none; flex: 1; overflow: hidden; }
   #admin-view.active { display: flex; }
-  .admin-sidebar { width: 220px; border-right: 1px solid var(--border); overflow-y: auto; padding: 1rem; }
+  .admin-sidebar { width: 220px; border-right: 1px solid var(--border); overflow-y: auto; padding: 1rem; flex-shrink: 0; }
   .admin-main { flex: 1; overflow-y: auto; padding: 2rem; }
-
   .admin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
-  .admin-card { background: var(--surface2); border-radius: 8px; overflow: hidden; position: relative; padding-bottom: 10px; border: 1px solid var(--border); }
-  .admin-card img { width: 100%; height: 110px; object-fit: cover; }
-  .admin-card-del { position: absolute; top: 5px; right: 5px; background: var(--danger); border: none; color: white; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+  .admin-card { background: var(--surface2); border-radius: 8px; overflow: hidden; position: relative; border: 1px solid var(--border); }
+  .admin-card img { width: 100%; height: 110px; object-fit: cover; display: block; }
+  .admin-card-body { padding: 8px 10px 10px; }
+  .admin-card-del { position: absolute; top: 5px; right: 5px; background: var(--danger); border: none; color: white; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 11px; }
+  .admin-card-edit { position: absolute; top: 5px; left: 5px; background: rgba(0,134,230,0.85); border: none; color: white; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 11px; }
 
-  #toast { position: fixed; bottom: 1.5rem; right: 1.5rem; padding: 10px 16px; border-radius: 8px; background: var(--accent); color: white; display: none; z-index: 9999; }
-  
-  .city-list-item { padding: 10px; background: var(--surface); margin-bottom: 5px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; transition: background 0.2s; }
-  .city-list-item:hover { background: var(--surface2); }
-  
-  .attraction-card { cursor: pointer; transition: transform 0.2s; }
-  .attraction-card:hover { transform: translateY(-2px); }
+  /* form inputs shared style */
+  .fi { width: 100%; padding: 9px 11px; background: var(--bg); border: 1px solid var(--border); color: white; border-radius: 6px; font-family: var(--font-body); font-size: 0.82rem; }
+  .fi:focus { outline: none; border-color: var(--accent); }
+  textarea.fi { resize: vertical; height: 60px; }
 
-  .pin-dot { width: 12px; height: 12px; background: #4f8ef7; border: 2px solid white; border-radius: 50%; box-shadow: 0 0 10px rgba(79,142,247,0.5); }
-  .pin-dot.selected { background: #7e0d71; transform: scale(1.3); }
+  /* Modal */
+  .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; overflow-y: auto; padding: 20px; }
+  .modal-bg.open { display: flex; }
+  .modal-box { background: var(--surface); padding: 28px; border-radius: 14px; width: 420px; max-width: 95vw; }
+  .modal-box h3 { font-family: var(--font-display); margin-bottom: 18px; font-size: 1.2rem; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .span2 { grid-column: span 2; }
+  .form-label { font-size: 0.72rem; color: var(--muted); margin-bottom: 4px; }
+  .modal-btns { display: flex; gap: 10px; margin-top: 18px; }
+  .btn { padding: 9px 18px; border-radius: 7px; border: none; cursor: pointer; font-family: var(--font-body); font-size: 0.8rem; font-weight: 500; transition: opacity 0.15s; }
+  .btn:hover { opacity: 0.85; }
+  .btn-primary { background: var(--accent); color: white; flex: 1; }
+  .btn-ghost { background: var(--surface2); color: var(--muted); }
+
+  /* Pins */
+  .pin-dot { width: 12px; height: 12px; background: #4f8ef7; border: 2px solid white; border-radius: 50%; box-shadow: 0 0 10px rgba(79,142,247,0.5); transition: all 0.15s; }
+  .pin-dot.selected { background: #7e0d71; transform: scale(1.3); box-shadow: 0 0 14px rgba(126,13,113,0.7); }
   .pin-label { color: white; font-size: 10px; font-weight: bold; text-shadow: 0 1px 3px black; margin-left: 5px; }
   .pin-row { display: flex; align-items: center; }
+
+  .city-list-item { padding: 10px; background: var(--surface); margin-bottom: 5px; border-radius: 5px; cursor: pointer; font-size: 0.8rem; transition: background 0.2s; }
+  .city-list-item:hover, .city-list-item.active { background: var(--surface2); }
+
+  #toast { position: fixed; bottom: 1.5rem; right: 1.5rem; padding: 10px 16px; border-radius: 8px; background: var(--accent); color: white; display: none; z-index: 9999; font-size: 0.82rem; }
+
+  .section-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 8px; }
+
+  .closed-days-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+  .day-chip { padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 0.7rem; cursor: pointer; font-family: var(--font-body); transition: all 0.15s; }
+  .day-chip.selected { background: var(--danger); color: white; border-color: var(--danger); }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="header-left"><h1>Scotland <span>Travel Explorer</span></h1></div>
+  <div class="header-left"><h1>Scotland <span style="font-size:0.9rem; color:var(--muted); font-family:var(--font-body); font-weight:300;"> · Travel Explorer</span></h1></div>
   <div class="tab-bar">
     <button class="tab-btn active" onclick="switchTab('map')">🗺 Map</button>
-    <button class="tab-btn" onclick="switchTab('admin')">📁 Manage Photos</button>
+    <button class="tab-btn" onclick="switchTab('admin')">📁 Manage</button>
   </div>
 </header>
 
@@ -75,99 +115,204 @@
 <div id="map-view" class="layout">
   <aside class="panel">
     <div id="panel-hint">
-        <div class="mode-badge" id="mode-badge">Explore mode</div>
-        <p id="hint-text" style="font-size: 0.8rem; color: var(--muted); margin-bottom: 15px;">Click a city to see attractions. Click two to see distance.</p>
+      <div class="mode-badge" id="mode-badge">Explore mode</div>
+      <p id="hint-text" style="font-size:0.8rem; color:var(--muted); margin-bottom:15px;">Click a city to see attractions. Click two to see driving distance.</p>
     </div>
+
+    <!-- City view -->
     <div id="city-panel" style="display:none;">
-      <h2 id="city-name" style="font-family: var(--font-display); margin-bottom: 5px;"></h2>
-      <p id="city-desc" style="font-size: 0.8rem; color: var(--muted); margin-bottom: 10px;"></p>
+      <h2 id="city-name" style="font-family:var(--font-display); margin-bottom:4px;"></h2>
+      <p id="city-desc" style="font-size:0.78rem; color:var(--muted); margin-bottom:12px;"></p>
+
+      <!-- Tag filter bar -->
+      <div class="tag-bar" id="tag-bar"></div>
+
       <div id="city-attractions"></div>
-      <button onclick="clearSelection()" style="margin-top: 20px; color: var(--muted); background: none; border: 1px solid var(--border); padding: 5px; cursor: pointer; font-size: 0.7rem;">Clear Selection</button>
+      <button onclick="clearSelection()" style="margin-top:16px; color:var(--muted); background:none; border:1px solid var(--border); padding:5px 12px; cursor:pointer; font-size:0.7rem; border-radius:5px;">Clear Selection</button>
     </div>
+
+    <!-- Route view -->
     <div id="route-panel" style="display:none;">
-        <h2 id="route-city1"></h2> → <h2 id="route-city2"></h2>
-        <div style="background:var(--surface2); padding:15px; border-radius:10px; margin-top:15px; border:1px solid var(--accent);">
-            <div id="route-km" style="font-size: 1.8rem; color: var(--accent); font-weight: bold;">--</div>
-            <div style="font-size: 0.6rem; text-transform: uppercase; color: var(--muted);">Kilometres</div>
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px; flex-wrap:wrap;">
+        <h2 id="route-city1" style="font-family:var(--font-display); font-size:1.1rem;"></h2>
+        <span style="color:var(--accent);">→</span>
+        <h2 id="route-city2" style="font-family:var(--font-display); font-size:1.1rem;"></h2>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px;">
+        <div style="background:var(--surface2); padding:15px; border-radius:10px; text-align:center; border:1px solid var(--accent);">
+          <div id="route-km" style="font-size:1.8rem; color:var(--accent); font-weight:bold;">--</div>
+          <div style="font-size:0.6rem; text-transform:uppercase; color:var(--muted);">Kilometres</div>
         </div>
-        <div style="background:var(--surface2); padding:15px; border-radius:10px; margin-top:10px; border:1px solid var(--border);">
-            <div id="route-time" style="font-size: 1.5rem; color: var(--text);">--</div>
-            <div style="font-size: 0.6rem; text-transform: uppercase; color: var(--muted);">Drive Time</div>
+        <div style="background:var(--surface2); padding:15px; border-radius:10px; text-align:center; border:1px solid var(--border);">
+          <div id="route-time" style="font-size:1.8rem; color:var(--text); font-weight:bold;">--</div>
+          <div style="font-size:0.6rem; text-transform:uppercase; color:var(--muted);">Drive Time</div>
         </div>
-        <button onclick="clearSelection()" style="margin-top: 20px; color: var(--muted); background: none; border: 1px solid var(--border); padding: 5px; cursor: pointer; font-size: 0.7rem;">Clear Selection</button>
+      </div>
+      <div style="font-size:0.72rem; color:var(--muted); padding:8px 12px; background:var(--surface2); border-radius:8px; border-left:2px solid rgba(0,134,230,0.4);">Approximate driving times. For navigation use Google Maps or Waze.</div>
+      <button onclick="clearSelection()" style="margin-top:16px; color:var(--muted); background:none; border:1px solid var(--border); padding:5px 12px; cursor:pointer; font-size:0.7rem; border-radius:5px;">Clear Selection</button>
     </div>
   </aside>
   <div id="map"></div>
 </div>
 
 <!-- ADMIN VIEW -->
-<div id="admin-view" class="layout">
+<div id="admin-view">
   <aside class="admin-sidebar">
-    <p style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase; margin-bottom: 10px;">Cities</p>
+    <p style="font-size:0.7rem; color:var(--muted); text-transform:uppercase; margin-bottom:10px;">Cities</p>
     <div id="admin-city-list"></div>
-    <button onclick="openAddCity()" style="width: 100%; margin-top: 15px; padding: 8px; border: 1px dashed var(--border); background: transparent; color: var(--muted); cursor: pointer;">+ Add City</button>
+    <button onclick="openAddCity()" style="width:100%; margin-top:15px; padding:8px; border:1px dashed var(--border); background:transparent; color:var(--muted); cursor:pointer; border-radius:5px; font-size:0.78rem;">+ Add City</button>
   </aside>
   <main class="admin-main" id="admin-main">
-    <div style="text-align: center; margin-top: 100px; color: var(--muted);">Select a city on the left to manage its content.</div>
+    <div style="text-align:center; margin-top:100px; color:var(--muted);">Select a city to manage its attractions.</div>
   </main>
 </div>
 
-<!-- Modal for New City -->
-<div id="city-modal" style="display:none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center;">
-    <div style="background: var(--surface); padding: 30px; border-radius: 12px; width: 320px;">
-        <h3 style="font-family: var(--font-display);">Add a Scottish City</h3>
-        <input type="text" id="city-input" placeholder="e.g. Oban" style="width: 100%; padding: 10px; margin: 20px 0; background: var(--bg); border: 1px solid var(--border); color: white; border-radius: 6px;">
-        <div style="display: flex; gap: 10px;">
-            <button onclick="submitAddCity()" style="flex: 1; padding: 10px; background: var(--accent); border: none; color: white; border-radius: 6px; cursor: pointer;">Add City</button>
-            <button onclick="closeAddCity()" style="flex: 1; padding: 10px; background: var(--surface2); border: none; color: white; border-radius: 6px; cursor: pointer;">Cancel</button>
+<!-- ADD / EDIT ATTRACTION MODAL -->
+<div class="modal-bg" id="attr-modal">
+  <div class="modal-box">
+    <h3 id="modal-title">Add Attraction</h3>
+    <div class="form-grid">
+      <div class="span2">
+        <div class="form-label">Attraction Name *</div>
+        <input class="fi" type="text" id="attrName" placeholder="e.g. Edinburgh Castle" required>
+      </div>
+      <div class="span2">
+        <div class="form-label">Description</div>
+        <textarea class="fi" id="attrDesc" placeholder="A short description..."></textarea>
+      </div>
+      <div>
+        <div class="form-label">Opens</div>
+        <input class="fi" type="time" id="attrOpen">
+      </div>
+      <div>
+        <div class="form-label">Closes</div>
+        <input class="fi" type="time" id="attrClose">
+      </div>
+      <div class="span2">
+        <div class="form-label" style="margin-bottom:8px;">Closed Days</div>
+        <div class="closed-days-grid" id="closed-days">
+          <button type="button" class="day-chip" data-day="Monday">Mon</button>
+          <button type="button" class="day-chip" data-day="Tuesday">Tue</button>
+          <button type="button" class="day-chip" data-day="Wednesday">Wed</button>
+          <button type="button" class="day-chip" data-day="Thursday">Thu</button>
+          <button type="button" class="day-chip" data-day="Friday">Fri</button>
+          <button type="button" class="day-chip" data-day="Saturday">Sat</button>
+          <button type="button" class="day-chip" data-day="Sunday">Sun</button>
         </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <input type="checkbox" id="attrTick" onchange="document.getElementById('price-wrap').style.display=this.checked?'block':'none'">
+        <label for="attrTick" style="font-size:0.8rem;">Ticketed?</label>
+      </div>
+      <div id="price-wrap" style="display:none;">
+        <div class="form-label">Price (£)</div>
+        <input class="fi" type="number" id="attrPrice" placeholder="0.00" step="0.01" min="0">
+      </div>
+      <div class="span2">
+        <div class="form-label">Tags (comma separated)</div>
+        <input class="fi" type="text" id="attrTags" placeholder="Castle, View, Historic">
+      </div>
+      <div class="span2" id="file-wrap">
+        <div class="form-label">Photo *</div>
+        <input class="fi" type="file" id="attrFile" accept="image/*" style="padding:6px;">
+      </div>
     </div>
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="closeAttrModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="submitAttrForm()">Save Attraction</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD CITY MODAL -->
+<div class="modal-bg" id="city-modal">
+  <div class="modal-box" style="width:320px;">
+    <h3>Add a Scottish City</h3>
+    <div class="form-label" style="margin-bottom:6px;">City name</div>
+    <input class="fi" type="text" id="city-input" placeholder="e.g. Oban" onkeydown="if(event.key==='Enter') submitAddCity()" style="margin-bottom:16px;">
+    <div class="modal-btns">
+      <button class="btn btn-ghost" onclick="closeAddCity()">Cancel</button>
+      <button class="btn btn-primary" onclick="submitAddCity()">Add City</button>
+    </div>
+  </div>
 </div>
 
 <div id="toast"></div>
 
 <script>
+// ============================================================
+//  STATE
+// ============================================================
 let cities = [], selected = [], routeLine = null, map;
 let attractionMarkers = [], markerEls = {}, attractionMarkerMap = {};
+let activeTag = null;
+let modalMode = "add"; // "add" or "edit"
+let editingAttrId = null;
+let editingCityId = null;
+let adminActiveCityName = null;
 
+// ============================================================
+//  TAB SWITCHING
+// ============================================================
 async function switchTab(tab) {
-  document.querySelectorAll(".tab-btn").forEach((b) => {
-    b.classList.toggle("active", b.innerText.toLowerCase().includes(tab));
+  document.querySelectorAll(".tab-btn").forEach(b => {
+    b.classList.toggle("active", b.innerText.toLowerCase().includes(tab === "map" ? "map" : "manage"));
   });
-  document.getElementById("map-view").style.display = tab === "map" ? "flex" : "none";
+  document.getElementById("map-view").style.display = tab === "map" ? "grid" : "none";
   document.getElementById("admin-view").classList.toggle("active", tab === "admin");
-  if (tab === "admin") { loadAdminSidebar(); }
+  if (tab === "admin") loadAdminSidebar();
   if (tab === "map" && map) setTimeout(() => map.invalidateSize(), 100);
 }
 
+// ============================================================
+//  MAP INIT
+// ============================================================
 async function initMap() {
-  map = L.map("map", { zoomControl: true, minZoom: 5, maxZoom: 14 }).setView([56.8, -4.2], 6);
-  L.tileLayer("https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg").addTo(map);
-  L.tileLayer("https://tiles.stadiamaps.com/tiles/stamen_toner_labels/{z}/{x}/{y}.png", { opacity: 0.6 }).addTo(map);
+  const scotlandBounds = L.latLngBounds(L.latLng(54.6, -7.6), L.latLng(60.9, 0.0));
+  map = L.map("map", {
+    zoomControl: true, minZoom: 5, maxZoom: 14,
+    maxBounds: scotlandBounds, maxBoundsViscosity: 0.85
+  }).setView([56.8, -4.2], 6);
+
+  L.tileLayer("https://tiles.stadiamaps.com/tiles/stamen_watercolor/{z}/{x}/{y}.jpg", {
+    attribution: '&copy; Stadia Maps &copy; Stamen Design &copy; OpenStreetMap'
+  }).addTo(map);
+  L.tileLayer("https://tiles.stadiamaps.com/tiles/stamen_toner_labels/{z}/{x}/{y}.png", {
+    opacity: 0.6
+  }).addTo(map);
+
   await refreshAllData();
 }
 
+// ============================================================
+//  PINS
+// ============================================================
 function updatePins() {
   cities.forEach(c => {
     if (!markerEls[c.id]) {
-        const wrap = document.createElement("div");
-        const row = document.createElement("div"); row.className = "pin-row";
-        const dot = document.createElement("div"); dot.className = "pin-dot";
-        const lbl = document.createElement("div"); lbl.className = "pin-label";
-        lbl.textContent = c.name;
-        row.append(dot, lbl); wrap.append(row);
-        
-        const marker = L.marker([c.lat, c.lng], { 
-            icon: L.divIcon({ className: "", html: wrap, iconSize: [100, 30], iconAnchor: [6, 6] }) 
-        }).addTo(map);
-        marker.on("click", () => handleClick(c.id));
-        markerEls[c.id] = dot;
+      const wrap = document.createElement("div");
+      const row = document.createElement("div"); row.className = "pin-row";
+      const dot = document.createElement("div"); dot.className = "pin-dot";
+      const lbl = document.createElement("div"); lbl.className = "pin-label";
+      lbl.textContent = c.name;
+      row.append(dot, lbl); wrap.append(row);
+      const marker = L.marker([c.lat, c.lng], {
+        icon: L.divIcon({ className: "", html: wrap, iconSize: [100, 30], iconAnchor: [6, 6] })
+      }).addTo(map);
+      marker.on("click", () => handleClick(c.id));
+      markerEls[c.id] = dot;
     }
     markerEls[c.id].classList.toggle("selected", selected.includes(c.id));
   });
 }
 
+// ============================================================
+//  CLICK HANDLER
+// ============================================================
 function handleClick(id) {
+  // clear attraction markers on every click
+  clearAttractionMarkers();
+
   if (selected.includes(id)) {
     selected = selected.filter(x => x !== id);
   } else if (selected.length < 2) {
@@ -175,166 +320,395 @@ function handleClick(id) {
   } else {
     selected = [id];
   }
+
+  // clear route line unless going to 2 cities
+  if (selected.length !== 2 && routeLine) {
+    map.removeLayer(routeLine);
+    routeLine = null;
+  }
+
   updatePins();
   updatePanel();
-  showCityAttractions();
-}
 
-function showCityAttractions() {
-  attractionMarkers.forEach(m => map.removeLayer(m));
-  attractionMarkers = [];
-  attractionMarkerMap = {};
-
+  // show attraction markers only for single city
   if (selected.length === 1) {
     const city = cities.find(x => x.id === selected[0]);
-    city.attractions.forEach(a => {
-      const m = L.circleMarker([city.lat + (Math.random()-0.5)*0.02, city.lng + (Math.random()-0.5)*0.02], {
-        radius: 6, color: "#e8a44a", fillOpacity: 0.9, weight: 2
-      }).addTo(map);
-      m.bindPopup(`<strong>${a.name}</strong><br><img src="${a.img}" width="120" style="border-radius:4px; margin-top:5px;">`);
-      attractionMarkers.push(m);
-      attractionMarkerMap[a._id] = m;
-    });
+    if (city) showCityAttractions(city);
   }
 }
 
-async function updatePanel() {
-  const badge = document.getElementById("mode-badge"), hint = document.getElementById("hint-text");
-  const cityP = document.getElementById("city-panel"), routeP = document.getElementById("route-panel");
-  const hintBox = document.getElementById("panel-hint");
+function clearAttractionMarkers() {
+  attractionMarkers.forEach(m => map.removeLayer(m));
+  attractionMarkers = [];
+  attractionMarkerMap = {};
+}
 
-  cityP.style.display = routeP.style.display = 'none';
-  hintBox.style.display = selected.length === 0 ? 'block' : 'none';
+function showCityAttractions(city) {
+  city.attractions.forEach(a => {
+    // use real coords if available, otherwise scatter slightly around city
+    const lat = (a.lat && a.lat !== city.lat) ? a.lat : city.lat + (Math.random() - 0.5) * 0.02;
+    const lng = (a.lng && a.lng !== city.lng) ? a.lng : city.lng + (Math.random() - 0.5) * 0.02;
+
+    const m = L.circleMarker([lat, lng], {
+      radius: 6, color: "#e8a44a", fillColor: "#e8a44a", fillOpacity: 0.9, weight: 2
+    }).addTo(map);
+
+    m.bindPopup(`
+      <div style="text-align:center; min-width:130px;">
+        ${a.img ? `<img src="${a.img}" width="140" style="border-radius:6px; margin-bottom:6px; display:block;">` : ''}
+        <strong style="font-size:12px;">${a.name}</strong>
+        ${a.hours?.open ? `<br><span style="font-size:10px; color:#888;">${a.hours.open} – ${a.hours.close || '?'}</span>` : ''}
+      </div>`);
+
+    attractionMarkers.push(m);
+    attractionMarkerMap[a._id] = m;
+  });
+}
+
+// ============================================================
+//  PANEL
+// ============================================================
+async function updatePanel() {
+  const badge   = document.getElementById("mode-badge");
+  const hintBox = document.getElementById("panel-hint");
+  const cityP   = document.getElementById("city-panel");
+  const routeP  = document.getElementById("route-panel");
+
+  cityP.style.display = routeP.style.display = "none";
+  hintBox.style.display = selected.length === 0 ? "block" : "none";
+  activeTag = null;
 
   if (selected.length === 0) {
-    badge.textContent = "Explore mode"; hint.textContent = "Click a city on the map.";
+    badge.textContent = "Explore mode";
     return;
   }
 
   if (selected.length === 1) {
-    cityP.style.display = 'block';
+    cityP.style.display = "block";
     badge.textContent = "City view";
     const c = cities.find(x => x.id === selected[0]);
     document.getElementById("city-name").textContent = c.name;
-    document.getElementById("city-desc").textContent = c.desc || "Exploring " + c.name;
-    
-    document.getElementById("city-attractions").innerHTML = c.attractions.map(a => `
-        <div class="attraction-card" onclick="panToAttraction('${a._id}')" style="background:var(--surface2); border-radius:10px; margin-bottom:12px; border:1px solid var(--border); overflow:hidden;">
-          <img src="${a.img}" style="width:100%; height:110px; object-fit:cover;">
-          <div style="padding:12px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                <strong style="font-size:0.85rem;">${a.name}</strong>
-                <span style="font-size:0.6rem; color:var(--success); border:1px solid var(--success); padding:2px 5px; border-radius:4px;">${a.isTicketed ? '£'+a.price : 'FREE'}</span>
-            </div>
-            <p style="font-size:0.7rem; color:var(--muted); line-height:1.4;">${a.description || ''}</p>
-          </div>
-        </div>`).join("") || "<p style='font-size:0.7rem; color:var(--muted)'>No attractions added yet.</p>";
+    document.getElementById("city-desc").textContent = c.desc || "";
+    renderTagBar(c);
+    renderAttractionCards(c, null);
   }
 
   if (selected.length === 2) {
-    routeP.style.display = 'block';
+    routeP.style.display = "block";
     badge.textContent = "Route view";
-    const c1 = cities.find(x => x.id === selected[0]), c2 = cities.find(x => x.id === selected[1]);
+    const c1 = cities.find(x => x.id === selected[0]);
+    const c2 = cities.find(x => x.id === selected[1]);
     document.getElementById("route-city1").textContent = c1.name;
     document.getElementById("route-city2").textContent = c2.name;
+    document.getElementById("route-km").textContent = "…";
+    document.getElementById("route-time").textContent = "…";
 
+    // draw polyline
     if (routeLine) map.removeLayer(routeLine);
-    routeLine = L.polyline([[c1.lat, c1.lng], [c2.lat, c2.lng]], { color: "#e8a44a", dashArray: "5, 10" }).addTo(map);
+    routeLine = L.polyline([[c1.lat, c1.lng], [c2.lat, c2.lng]], {
+      color: "#e8a44a", dashArray: "5, 10", weight: 2, opacity: 0.8
+    }).addTo(map);
 
-    const res = await fetch(`https://router.project-osrm.org/route/v1/driving/${c1.lng},${c1.lat};${c2.lng},${c2.lat}?overview=false`);
-    const data = await res.json();
-    if(data.routes) {
-        const km = Math.round(data.routes[0].distance / 1000);
+    try {
+      const res = await fetch(`https://router.project-osrm.org/route/v1/driving/${c1.lng},${c1.lat};${c2.lng},${c2.lat}?overview=false`);
+      const data = await res.json();
+      if (data.routes) {
+        const km   = Math.round(data.routes[0].distance / 1000);
         const mins = Math.round(data.routes[0].duration / 60);
         document.getElementById("route-km").textContent = km;
-        document.getElementById("route-time").textContent = Math.floor(mins/60) + "h " + (mins%60) + "m";
+        document.getElementById("route-time").textContent = Math.floor(mins / 60) + "h " + (mins % 60) + "m";
+      }
+    } catch(e) {
+      document.getElementById("route-km").textContent = "—";
+      document.getElementById("route-time").textContent = "—";
     }
   }
 }
 
-function panToAttraction(id) {
-    const m = attractionMarkerMap[id];
-    if(m) { map.panTo(m.getLatLng()); m.openPopup(); }
+// ---- Tag bar ----
+function renderTagBar(city) {
+  // collect all unique tags from attractions
+  const allTags = new Set();
+  city.attractions.forEach(a => (a.tags || []).forEach(t => allTags.add(t)));
+
+  const bar = document.getElementById("tag-bar");
+  if (allTags.size === 0) { bar.innerHTML = ""; return; }
+
+  bar.innerHTML = [...allTags].map(tag => `
+    <button class="tag-btn ${activeTag === tag ? 'active' : ''}"
+      onclick="filterByTag('${tag}', '${city.id}')">${tag}</button>`).join("");
 }
 
-function loadAdminSidebar() {
-    const list = document.getElementById("admin-city-list");
-    list.innerHTML = cities.map(c => `
-        <div class="city-list-item" onclick="selectAdminCity('${c.name}')">
-            ${c.name} <span style="float:right; opacity:0.5; font-size:0.6rem">${c.attractions.length}</span>
+function filterByTag(tag, cityId) {
+  const city = cities.find(c => c.id === cityId);
+  if (activeTag === tag) {
+    activeTag = null;
+    renderTagBar(city);
+    renderAttractionCards(city, null);
+  } else {
+    activeTag = tag;
+    renderTagBar(city);
+    renderAttractionCards(city, tag);
+  }
+}
+
+// ---- Attraction cards ----
+function renderAttractionCards(city, filterTag) {
+  const container = document.getElementById("city-attractions");
+  let attractions = city.attractions;
+  if (filterTag) attractions = attractions.filter(a => (a.tags || []).includes(filterTag));
+
+  if (!attractions.length) {
+    container.innerHTML = `<p style="font-size:0.75rem; color:var(--muted);">${filterTag ? 'No attractions with tag "' + filterTag + '".' : 'No attractions yet.'}</p>`;
+    return;
+  }
+
+  container.innerHTML = attractions.map(a => {
+    const hoursStr = a.hours?.open
+      ? `<div class="attr-hours">🕐 <span>${a.hours.open}</span> – <span>${a.hours.close || '?'}</span>${a.hours.closedDays ? ` · Closed: <span>${a.hours.closedDays}</span>` : ''}</div>`
+      : '';
+    const tagsStr = (a.tags || []).length
+      ? `<div class="attr-tags">${a.tags.map(t => `<span class="attr-tag">${t}</span>`).join('')}</div>`
+      : '';
+    const priceStr = a.isTicketed ? `£${parseFloat(a.price).toFixed(2)}` : 'FREE';
+
+    return `
+      <div class="attraction-card" onclick="panToAttraction('${a._id}')">
+        ${a.img ? `<img src="${a.img}" alt="${a.name}">` : ''}
+        <div class="attr-body">
+          <div class="attr-header">
+            <span class="attr-name">${a.name}</span>
+            <span class="attr-price">${priceStr}</span>
+          </div>
+          ${a.description ? `<p class="attr-desc">${a.description}</p>` : ''}
+          ${hoursStr}
+          ${tagsStr}
         </div>
-    `).join("");
+      </div>`;
+  }).join("");
+}
+
+function panToAttraction(id) {
+  const m = attractionMarkerMap[id];
+  if (m) { map.panTo(m.getLatLng()); m.openPopup(); }
+}
+
+function clearSelection() {
+  selected = [];
+  activeTag = null;
+  clearAttractionMarkers();
+  if (routeLine) { map.removeLayer(routeLine); routeLine = null; }
+  updatePins();
+  updatePanel();
+}
+
+// ============================================================
+//  ADMIN SIDEBAR
+// ============================================================
+function loadAdminSidebar() {
+  const list = document.getElementById("admin-city-list");
+  list.innerHTML = cities.map(c => `
+    <div class="city-list-item ${adminActiveCityName === c.name ? 'active' : ''}"
+      onclick="selectAdminCity('${c.name}')">
+      ${c.name}
+      <span style="float:right; opacity:0.5; font-size:0.65rem;">${c.attractions.length}</span>
+    </div>`).join("") || `<p style="font-size:0.75rem; color:var(--muted);">No cities yet.</p>`;
 }
 
 function selectAdminCity(name) {
-    const city = cities.find(c => c.name === name);
-    const main = document.getElementById("admin-main");
-    
-    // Clear and build the UI
-    main.innerHTML = `
-        <h2 style="margin-bottom:20px;">Manage ${name}</h2>
-        <div style="background:var(--surface2); padding:20px; border-radius:12px; margin-bottom:30px; border:1px solid var(--border);">
-            <form id="uploadForm" style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
-                <input type="text" id="attrName" placeholder="Attraction Name" required style="grid-column: span 2; padding:10px; background:var(--bg); color:white; border:1px solid var(--border);">
-                <textarea id="attrDesc" placeholder="Description..." style="grid-column: span 2; padding:10px; background:var(--bg); color:white; border:1px solid var(--border); height:60px;"></textarea>
-                
-                <label style="font-size:0.8rem;"><input type="checkbox" id="attrTick"> Ticketed?</label>
-                <input type="number" id="attrPrice" placeholder="Price £" style="padding:5px; background:var(--bg); color:white; border:1px solid var(--border);">
-                
-                <div style="font-size:0.8rem;">Open: <input type="time" id="attrOpen"></div>
-                <div style="font-size:0.8rem;">Close: <input type="time" id="attrClose"></div>
-                
-                <input type="text" id="attrTags" placeholder="Tags (Castle, View)" style="grid-column: span 2; padding:10px; background:var(--bg); color:white; border:1px solid var(--border);">
-                
-                <input type="file" id="attrFile" required style="grid-column: span 2;">
-                <button type="submit" style="grid-column: span 2; background:var(--accent); color:white; border:none; padding:12px; border-radius:6px; font-weight:bold; cursor:pointer;">Save Attraction</button>
-            </form>
-        </div>
-        <div class="admin-grid">${city.attractions.map(a => `
-            <div class="admin-card">
-                <img src="${a.img}">
-                <div style="padding:10px;">
-                    <div style="font-size:0.75rem; font-weight:bold;">${a.name}</div>
-                    <button class="admin-card-del" onclick="deleteAttr('${city.id}', '${a._id}')">✕</button>
-                </div>
-            </div>`).join("")}
-        </div>`;
+  adminActiveCityName = name;
+  loadAdminSidebar();
+  const city = cities.find(c => c.name === name);
+  const main = document.getElementById("admin-main");
 
-    // THE SAVE LOGIC
-    document.getElementById("uploadForm").onsubmit = async (e) => {
-        e.preventDefault();
-        const fd = new FormData();
-        
-        // Match these keys exactly with the server.js req.body names
-        fd.append('image', document.getElementById('attrFile').files[0]);
-        fd.append('name', document.getElementById('attrName').value);
-        fd.append('description', document.getElementById('attrDesc').value);
-        fd.append('isTicketed', document.getElementById('attrTick').checked);
-        fd.append('price', document.getElementById('attrPrice').value || 0);
-        fd.append('openTime', document.getElementById('attrOpen').value);
-        fd.append('closeTime', document.getElementById('attrClose').value);
-        fd.append('tags', document.getElementById('attrTags').value);
+  main.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <h2 style="font-family:var(--font-display);">${name}</h2>
+      <button onclick="openAttrModal('${city.id}')"
+        style="background:var(--accent); color:white; border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-size:0.78rem;">
+        + Add Attraction
+      </button>
+    </div>
+    <div class="admin-grid">
+      ${city.attractions.map(a => `
+        <div class="admin-card">
+          ${a.img ? `<img src="${a.img}">` : `<div style="height:110px; background:var(--surface); display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:0.7rem;">No image</div>`}
+          <button class="admin-card-edit" onclick="openAttrModal('${city.id}','${a._id}')" title="Edit">✎</button>
+          <button class="admin-card-del" onclick="deleteAttr('${city.id}','${a._id}')" title="Delete">✕</button>
+          <div class="admin-card-body">
+            <div style="font-size:0.75rem; font-weight:600; margin-bottom:2px;">${a.name}</div>
+            <div style="font-size:0.65rem; color:var(--muted);">${a.isTicketed ? '£' + parseFloat(a.price).toFixed(2) : 'FREE'}${a.hours?.open ? ' · ' + a.hours.open : ''}</div>
+          </div>
+        </div>`).join("") || `<p style="color:var(--muted); font-size:0.8rem; grid-column:span 4;">No attractions yet. Click + Add Attraction.</p>`}
+    </div>`;
+}
 
-        showToast("Saving to Database...");
-        const res = await fetch(`/api/upload/${city.id}`, { method: 'POST', body: fd });
-        
-        if (res.ok) {
-            showToast("Success!", "success");
-            await refreshAllData(); // Reload memory
-            selectAdminCity(name);  // Redraw form/grid
-        } else {
-            showToast("Save failed", "error");
-        }
+// ============================================================
+//  ATTRACTION MODAL (add + edit)
+// ============================================================
+function openAttrModal(cityId, attrId = null) {
+  editingCityId = cityId;
+  editingAttrId = attrId;
+  modalMode = attrId ? "edit" : "add";
+
+  document.getElementById("modal-title").textContent = attrId ? "Edit Attraction" : "Add Attraction";
+  document.getElementById("file-wrap").style.display = attrId ? "none" : "block"; // hide file on edit
+
+  // reset form
+  document.getElementById("attrName").value = "";
+  document.getElementById("attrDesc").value = "";
+  document.getElementById("attrOpen").value = "";
+  document.getElementById("attrClose").value = "";
+  document.getElementById("attrTick").checked = false;
+  document.getElementById("attrPrice").value = "";
+  document.getElementById("attrTags").value = "";
+  document.getElementById("price-wrap").style.display = "none";
+  document.querySelectorAll(".day-chip").forEach(d => d.classList.remove("selected"));
+
+  // if editing, prefill
+  if (attrId) {
+    const city = cities.find(c => c.id === cityId);
+    const attr = city?.attractions.find(a => a._id === attrId);
+    if (attr) {
+      document.getElementById("attrName").value        = attr.name || "";
+      document.getElementById("attrDesc").value        = attr.description || "";
+      document.getElementById("attrOpen").value        = attr.hours?.open || "";
+      document.getElementById("attrClose").value       = attr.hours?.close || "";
+      document.getElementById("attrTick").checked      = attr.isTicketed || false;
+      document.getElementById("attrPrice").value       = attr.price || "";
+      document.getElementById("attrTags").value        = (attr.tags || []).join(", ");
+      document.getElementById("price-wrap").style.display = attr.isTicketed ? "block" : "none";
+
+      // closed days
+      const closedDays = attr.hours?.closedDays ? attr.hours.closedDays.split(",").map(d => d.trim()) : [];
+      document.querySelectorAll(".day-chip").forEach(d => {
+        if (closedDays.includes(d.dataset.day)) d.classList.add("selected");
+      });
+    }
+  }
+
+  document.getElementById("attr-modal").classList.add("open");
+}
+
+function closeAttrModal() {
+  document.getElementById("attr-modal").classList.remove("open");
+}
+
+// toggle day chip
+document.querySelectorAll(".day-chip").forEach(btn => {
+  btn.addEventListener("click", () => btn.classList.toggle("selected"));
+});
+
+async function submitAttrForm() {
+  const name = document.getElementById("attrName").value.trim();
+  if (!name) { alert("Attraction name is required"); return; }
+
+  const closedDays = [...document.querySelectorAll(".day-chip.selected")]
+    .map(d => d.dataset.day).join(", ");
+
+  if (modalMode === "add") {
+    const file = document.getElementById("attrFile").files[0];
+    if (!file) { alert("Please select an image"); return; }
+
+    const fd = new FormData();
+    fd.append("image",       file);
+    fd.append("name",        name);
+    fd.append("description", document.getElementById("attrDesc").value);
+    fd.append("isTicketed",  document.getElementById("attrTick").checked);
+    fd.append("price",       document.getElementById("attrPrice").value || 0);
+    fd.append("openTime",    document.getElementById("attrOpen").value);
+    fd.append("closeTime",   document.getElementById("attrClose").value);
+    fd.append("closedDays",  closedDays);
+    fd.append("tags",        document.getElementById("attrTags").value);
+
+    showToast("Uploading...");
+    const res = await fetch(`/api/upload/${editingCityId}`, { method: "POST", body: fd });
+    if (res.ok) {
+      showToast("Saved!");
+      closeAttrModal();
+      await refreshAllData();
+      selectAdminCity(cities.find(c => c.id === editingCityId)?.name);
+    } else {
+      const err = await res.json().catch(() => ({}));
+      showToast("Error: " + (err.error || "Upload failed"));
+    }
+
+  } else {
+    // EDIT — send JSON patch
+    const body = {
+      cityId:      editingCityId,
+      attractionId: editingAttrId,
+      name,
+      description: document.getElementById("attrDesc").value,
+      isTicketed:  document.getElementById("attrTick").checked,
+      price:       parseFloat(document.getElementById("attrPrice").value) || 0,
+      openTime:    document.getElementById("attrOpen").value,
+      closeTime:   document.getElementById("attrClose").value,
+      closedDays,
+      tags:        document.getElementById("attrTags").value
     };
+
+    showToast("Saving...");
+    const res = await fetch("/api/edit-attraction", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+    if (res.ok) {
+      showToast("Updated!");
+      closeAttrModal();
+      await refreshAllData();
+      selectAdminCity(cities.find(c => c.id === editingCityId)?.name);
+    } else {
+      showToast("Update failed");
+    }
+  }
 }
 
+// ============================================================
+//  DELETE ATTRACTION
+// ============================================================
 async function deleteAttr(cityId, attrId) {
-    if(!confirm("Are you sure?")) return;
-    await fetch('/api/delete-attraction', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({cityId, attractionId: attrId}) });
-    await refreshAllData();
-    selectAdminCity(cities.find(c => c.id === cityId).name);
+  if (!confirm("Delete this attraction?")) return;
+  await fetch("/api/delete-attraction", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ cityId, attractionId: attrId })
+  });
+  showToast("Deleted");
+  await refreshAllData();
+  selectAdminCity(cities.find(c => c.id === cityId)?.name);
 }
 
+// ============================================================
+//  ADD CITY
+// ============================================================
+function openAddCity() { document.getElementById("city-modal").classList.add("open"); setTimeout(() => document.getElementById("city-input").focus(), 100); }
+function closeAddCity() { document.getElementById("city-modal").classList.remove("open"); document.getElementById("city-input").value = ""; }
+
+async function submitAddCity() {
+  const name = document.getElementById("city-input").value.trim();
+  if (!name) return;
+  showToast("Finding location...");
+  const res = await fetch("/api/city", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name })
+  });
+  const data = await res.json();
+  if (data.success) {
+    closeAddCity();
+    await refreshAllData();
+    loadAdminSidebar();
+    showToast(`${name} added!`);
+  } else {
+    alert("Error: " + (data.error || "Something went wrong"));
+  }
+}
+
+// ============================================================
+//  DATA
+// ============================================================
 async function refreshAllData() {
   const res = await fetch("/api/data");
   const data = await res.json();
@@ -342,31 +716,13 @@ async function refreshAllData() {
   updatePins();
 }
 
-function openAddCity() { document.getElementById("city-modal").style.display = "flex"; }
-function closeAddCity() { document.getElementById("city-modal").style.display = "none"; }
-
-async function submitAddCity() {
-  const input = document.getElementById("city-input");
-  const name = input.value.trim();
-  if(!name) return;
-  await fetch("/api/city", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify({name}) });
-  input.value = "";
-  closeAddCity();
-  await refreshAllData();
-  loadAdminSidebar();
-  showToast("City added!");
-}
-
+// ============================================================
+//  TOAST
+// ============================================================
 function showToast(msg) {
   const t = document.getElementById("toast");
   t.textContent = msg; t.style.display = "block";
   setTimeout(() => t.style.display = "none", 3000);
-}
-
-function clearSelection() {
-    selected = [];
-    if(routeLine) map.removeLayer(routeLine);
-    updatePins(); updatePanel(); showCityAttractions();
 }
 
 window.onload = initMap;

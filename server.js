@@ -153,6 +153,31 @@ app.post("/api/upload/:cityId", upload.single("image"), async (req, res) => {
   }
 });
 
+app.post("/api/edit-attraction", async (req, res) => {
+  try {
+    const { cityId, attractionId, name, description, isTicketed, price, openTime, closeTime, closedDays, tags } = req.body;
+    const city = await City.findOne({ id: cityId });
+    if (!city) return res.status(404).json({ error: "City not found" });
+
+    const attr = city.attractions.id(attractionId);
+    if (!attr) return res.status(404).json({ error: "Attraction not found" });
+
+    attr.name        = name;
+    attr.description = description;
+    attr.isTicketed  = isTicketed;
+    attr.price       = parseFloat(price) || 0;
+    attr.hours       = { open: openTime, close: closeTime, closedDays };
+    attr.tags        = tags ? tags.split(",").map(t => t.trim()).filter(Boolean) : [];
+
+    city.tags = generateTags(city.attractions);
+    await city.save();
+    res.json({ success: true });
+  } catch(err) {
+    console.error("Edit attraction error:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.post("/api/delete-attraction", async (req, res) => {
   try {
     await City.findOneAndUpdate(
