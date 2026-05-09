@@ -269,38 +269,43 @@ function loadAdminSidebar() {
 function selectAdminCity(name) {
     const city = cities.find(c => c.name === name);
     const main = document.getElementById("admin-main");
+    
+    // Clear and build the UI
     main.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <h2 style="font-family: var(--font-display);">Manage ${name}</h2>
-        </div>
-        <div style="background:var(--surface); padding:20px; border-radius:12px; margin-bottom:30px; border:1px solid var(--border);">
+        <h2 style="margin-bottom:20px;">Manage ${name}</h2>
+        <div style="background:var(--surface2); padding:20px; border-radius:12px; margin-bottom:30px; border:1px solid var(--border);">
             <form id="uploadForm" style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
-                <input type="text" id="attrName" placeholder="Attraction Name" required style="grid-column: span 2; padding:10px; background:var(--bg); border:1px solid var(--border); color:white; border-radius:6px;">
-                <textarea id="attrDesc" placeholder="Description..." style="grid-column: span 2; padding:10px; background:var(--bg); border:1px solid var(--border); color:white; border-radius:6px; height:60px;"></textarea>
-                <div style="display:flex; gap:10px; align-items:center; font-size:0.8rem;">
-                    <label><input type="checkbox" id="attrTick" onchange="document.getElementById('p-wrap').style.display=this.checked?'block':'none'"> Ticketed?</label>
-                    <div id="p-wrap" style="display:none">£<input type="number" id="attrPrice" placeholder="0" style="width:50px; background:transparent; border:1px solid var(--border); color:white;"></div>
-                </div>
-                <div style="display:flex; gap:10px; align-items:center; font-size:0.8rem;">
-                    Open: <input type="time" id="attrOpen" style="background:transparent; border:1px solid var(--border); color:white;">
-                    Close: <input type="time" id="attrClose" style="background:transparent; border:1px solid var(--border); color:white;">
-                </div>
-                <input type="file" id="attrFile" required style="grid-column: span 2; font-size:0.7rem;">
-                <button type="submit" style="grid-column: span 2; background:var(--accent); color:white; border:none; padding:12px; border-radius:6px; cursor:pointer; font-weight:bold;">Save Attraction</button>
+                <input type="text" id="attrName" placeholder="Attraction Name" required style="grid-column: span 2; padding:10px; background:var(--bg); color:white; border:1px solid var(--border);">
+                <textarea id="attrDesc" placeholder="Description..." style="grid-column: span 2; padding:10px; background:var(--bg); color:white; border:1px solid var(--border); height:60px;"></textarea>
+                
+                <label style="font-size:0.8rem;"><input type="checkbox" id="attrTick"> Ticketed?</label>
+                <input type="number" id="attrPrice" placeholder="Price £" style="padding:5px; background:var(--bg); color:white; border:1px solid var(--border);">
+                
+                <div style="font-size:0.8rem;">Open: <input type="time" id="attrOpen"></div>
+                <div style="font-size:0.8rem;">Close: <input type="time" id="attrClose"></div>
+                
+                <input type="text" id="attrTags" placeholder="Tags (Castle, View)" style="grid-column: span 2; padding:10px; background:var(--bg); color:white; border:1px solid var(--border);">
+                
+                <input type="file" id="attrFile" required style="grid-column: span 2;">
+                <button type="submit" style="grid-column: span 2; background:var(--accent); color:white; border:none; padding:12px; border-radius:6px; font-weight:bold; cursor:pointer;">Save Attraction</button>
             </form>
         </div>
         <div class="admin-grid">${city.attractions.map(a => `
             <div class="admin-card">
                 <img src="${a.img}">
                 <div style="padding:10px;">
-                    <div style="font-size:0.75rem; font-weight:bold; margin-bottom:4px;">${a.name}</div>
+                    <div style="font-size:0.75rem; font-weight:bold;">${a.name}</div>
                     <button class="admin-card-del" onclick="deleteAttr('${city.id}', '${a._id}')">✕</button>
                 </div>
-            </div>`).join("")}</div>`;
+            </div>`).join("")}
+        </div>`;
 
+    // THE SAVE LOGIC
     document.getElementById("uploadForm").onsubmit = async (e) => {
         e.preventDefault();
         const fd = new FormData();
+        
+        // Match these keys exactly with the server.js req.body names
         fd.append('image', document.getElementById('attrFile').files[0]);
         fd.append('name', document.getElementById('attrName').value);
         fd.append('description', document.getElementById('attrDesc').value);
@@ -308,13 +313,17 @@ function selectAdminCity(name) {
         fd.append('price', document.getElementById('attrPrice').value || 0);
         fd.append('openTime', document.getElementById('attrOpen').value);
         fd.append('closeTime', document.getElementById('attrClose').value);
+        fd.append('tags', document.getElementById('attrTags').value);
 
-        showToast("Uploading to Cloud...");
+        showToast("Saving to Database...");
         const res = await fetch(`/api/upload/${city.id}`, { method: 'POST', body: fd });
-        if(res.ok) {
-            showToast("Saved!", "success");
-            await refreshAllData();
-            selectAdminCity(name);
+        
+        if (res.ok) {
+            showToast("Success!", "success");
+            await refreshAllData(); // Reload memory
+            selectAdminCity(name);  // Redraw form/grid
+        } else {
+            showToast("Save failed", "error");
         }
     };
 }
