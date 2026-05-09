@@ -46,37 +46,36 @@ const City = mongoose.model("City", CitySchema);
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
 async function geocode(place) {
-    // We must wait 1 second because Nominatim (OSM) blocks rapid requests
-    await sleep(1000);
-    
-    // We use 'featuretype=settlement' to ensure we get the actual city/town, not a street or shop
-    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(place + ", Scotland")}&limit=1&featuretype=settlement`;
-    
-    try {
-        const res = await fetch(url, { 
-            headers: { 
-                // A specific User-Agent prevents being identified as a "bot" and getting fake data
-                "User-Agent": "ScotlandTravelPlanner_RealCoords_v1.0" 
-            } 
-        });
-        const data = await res.json();
-        
-        if (data && data.length > 0) {
-            console.log(`Found ${cityName} at: ${data[0].lat}, ${data[0].lon}`);
-            return {
-                lat: parseFloat(data[0].lat),
-                lng: parseFloat(data[0].lon)
-            };
-        } else {
-            console.warn(`Geocoder found nothing for: ${cityName}`);
-            return null;
-        }
-    } catch (e) {
-        console.error("Geocoding API Error:", e);
-        return null;
+  await sleep(1000);
+  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(place + ", Scotland")}&limit=1&featuretype=settlement`;
+  try {
+    const res = await fetch(url, { headers: { "User-Agent": "ScotlandTravelPlanner_v1.0" } });
+    const data = await res.json();
+    if (data && data.length > 0) {
+      console.log(`Found ${place} at: ${data[0].lat}, ${data[0].lon}`);
+      return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+    } else {
+      console.warn(`Geocoder found nothing for: ${place}`);
+      return null;
     }
+  } catch(e) {
+    console.error("Geocoding error:", e.message);
+    return null;
+  }
 }
 
+function generateTags(attractions) {
+  const keywords = ["Castle","Museum","Beach","Golf","Cathedral","Whisky",
+    "University","Waterfront","Hiking","Palace","Monument","Gallery","Park"];
+  const found = new Set();
+  attractions.forEach(a => {
+    const text = (a.name + " " + (a.description || "")).toLowerCase();
+    keywords.forEach(k => {
+      if (text.includes(k.toLowerCase())) found.add(k);
+    });
+  });
+  return [...found].slice(0, 5);
+}
 
 // --- ROUTES ---
 
